@@ -26,8 +26,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-extern volatile int flag , rise, fall; 
-extern volatile int distance; 
+//extern volatile int flag , rise, fall; 
+//extern volatile int distance; 
 extern volatile int flag2;
 extern volatile char buffer[100];
 extern volatile int counter; 
@@ -211,28 +211,28 @@ void TIM1_CC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_CC_IRQn 0 */
 	//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_3); 
-	if(!flag){	 // if you’re waiting for the rising edge
-		// Capture the timer current value
-		rise = HAL_TIM_ReadCapturedValue(&htim1,TIM_CHANNEL_2);
-		// Set the polarity to wait for the next falling edge
-		__HAL_TIM_SET_CAPTUREPOLARITY(&htim1,TIM_CHANNEL_2, TIM_CLOCKPOLARITY_FALLING);
-			flag = !flag; 
-	}
-	else{ 	// if you’re waiting for the falling edge
-		// Capture the timer current value
-		fall = HAL_TIM_ReadCapturedValue(&htim1,TIM_CHANNEL_2);
-		// Set the polarity to wait for the next rising edge
-		__HAL_TIM_SET_CAPTUREPOLARITY(&htim1,TIM_CHANNEL_2, TIM_CLOCKPOLARITY_RISING);
-		flag = !flag; 
-		// measure the distance between the two edges
-		uint32_t x = ((fall - rise))/58; 
-		fall = 0, rise = 0;
-		char uartBuf [20];
-		sprintf(uartBuf, "Distance: %d\r\n",x); 
-		distance = x;
-		// Transmit distance over UART
-	//	HAL_UART_Transmit(&huart2, (uint8_t *)uartBuf,20,20);
-	}
+//	if(!flag){	 // if you’re waiting for the rising edge
+//		// Capture the timer current value
+//		rise = HAL_TIM_ReadCapturedValue(&htim1,TIM_CHANNEL_2);
+//		// Set the polarity to wait for the next falling edge
+//		__HAL_TIM_SET_CAPTUREPOLARITY(&htim1,TIM_CHANNEL_2, TIM_CLOCKPOLARITY_FALLING);
+//			flag = !flag; 
+//	}
+//	else{ 	// if you’re waiting for the falling edge
+//		// Capture the timer current value
+//		fall = HAL_TIM_ReadCapturedValue(&htim1,TIM_CHANNEL_2);
+//		// Set the polarity to wait for the next rising edge
+//		__HAL_TIM_SET_CAPTUREPOLARITY(&htim1,TIM_CHANNEL_2, TIM_CLOCKPOLARITY_RISING);
+//		flag = !flag; 
+//		// measure the distance between the two edges
+//		uint32_t x = ((fall - rise))/58; 
+//		fall = 0, rise = 0;
+//		char uartBuf [20];
+//		sprintf(uartBuf, "Distance: %d\r\n",x); 
+//		distance = x;
+//		 //Transmit distance over UART
+//		HAL_UART_Transmit(&huart2, (uint8_t *)uartBuf,20,20);
+//	}
 	
 
 	
