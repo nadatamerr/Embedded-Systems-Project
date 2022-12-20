@@ -152,18 +152,34 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>211</LineNumber>
+          <LineNumber>161</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134228140</Address>
+          <Address>134223846</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>../Core/Src/stm32l4xx_it.c</Filename>
+          <Filename>../Core/Src/main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Lab_7\../Core/Src/stm32l4xx_it.c\211</Expression>
+          <Expression>\\Lab_7\../Core/Src/main.c\161</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>158</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134223828</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>../Core/Src/main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\Lab_7\../Core/Src/main.c\158</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -181,6 +197,11 @@
           <count>2</count>
           <WinNumber>1</WinNumber>
           <ItemText>uartBuf,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>distance_front</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>

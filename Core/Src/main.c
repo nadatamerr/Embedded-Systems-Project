@@ -60,6 +60,8 @@ static void MX_USART1_UART_Init(void);
 volatile int flag[3] , rise[3] , fall[3];
 volatile int distance_left;
 volatile int distance_right; 
+volatile int distance_front=100; 
+int distance_front_prev=0;
 volatile int flag2;
 volatile char buffer[100];
 volatile int counter;
@@ -67,6 +69,8 @@ int parktype[2] = {parallel,parallel};
 int time[2]={0,0};
 int lastcar[2]={0,0};
 int cartime[2]={0,0};
+int counter_front=0;
+
 
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
@@ -97,9 +101,9 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
 
 			distance_right = x;
 		}
-//		char uartBuf4[25];
-//    sprintf(uartBuf4, "distance right: %d\r\n", distance_right);
-//    HAL_UART_Transmit(&huart2, (uint8_t *)uartBuf4, 25, 200);
+		char uartBuf4[25];
+    sprintf(uartBuf4, "distance right: %d\r\n", distance_right);
+    HAL_UART_Transmit(&huart2, (uint8_t *)uartBuf4, 25, 200);
 	}
 	
 	else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
@@ -129,13 +133,40 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
 			}
 		
 //		
-//		char uartBuf [20];
-//		sprintf(uartBuf, "Distance left: %d\r\n",distance_left); 
-//		HAL_UART_Transmit(&huart2, (uint8_t *)uartBuf,20,20);
+		char uartBuf [20];
+		sprintf(uartBuf, "Distance left: %d\r\n",distance_left); 
+		HAL_UART_Transmit(&huart2, (uint8_t *)uartBuf,20,20);
 	}
 
+	else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
+			i=2;
+			
+			if(!flag[i]){	 // if you’re waiting for the rising edge
+					// Capture the timer current value
+					rise[i] = HAL_TIM_ReadCapturedValue(htim,TIM_CHANNEL_4);
+					// Set the polarity to wait for the next fall[i]ing edge
+					__HAL_TIM_SET_CAPTUREPOLARITY(htim,TIM_CHANNEL_4, TIM_CLOCKPOLARITY_FALLING);
+						flag[i] = !flag[i]; 
+			}
+			else { 	// if you’re waiting for the falling edge
+				// Capture the timer current value
+				fall[i] = HAL_TIM_ReadCapturedValue(htim,TIM_CHANNEL_4);
+				// Set the polarity to wait for the next rising edge
+				__HAL_TIM_SET_CAPTUREPOLARITY(htim,TIM_CHANNEL_4, TIM_CLOCKPOLARITY_RISING);
+				flag[i] = !flag[i]; 
+				// measure the distance_leftbetween the two edges
+				uint32_t x = ((fall[i] - rise[i]))/58; 
+				fall[i] = 0, rise[i] = 0;
+				
+				distance_front = x;
+				
 
+			}
+			char uartBuf5[25];
+      sprintf(uartBuf5, "distance front: %d\r\n", distance_front);
+      HAL_UART_Transmit(&huart2, (uint8_t *)uartBuf5, 25, 200);
 
+		}
 }
 
 
@@ -156,6 +187,7 @@ void reset()
   flag[2] = 0;
   distance_left = 0;
   distance_right = 0;
+	distance_front=0;
 	parktype[0] = parallel;
 	parktype[1] = parallel;
 	time[0] = 1; 
@@ -246,6 +278,7 @@ int main(void)
         HAL_Delay(100);
 				
 				//channel 1
+				 __HAL_TIM_SetCounter(&htim1, 0);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, 1);
         while (__HAL_TIM_GET_COUNTER(&htim1) < 10);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, 0);
@@ -253,6 +286,21 @@ int main(void)
         HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
         HAL_Delay(100);
 				
+				//channel 4
+				__HAL_TIM_SetCounter(&htim1, 0);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, 1);
+        while (__HAL_TIM_GET_COUNTER(&htim1) < 10);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, 0);
+
+        HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_4);
+        HAL_Delay(100);
+				
+				
+				if(distance_front < 15){
+						HAL_UART_Transmit(&huart2, s, 4, 100);
+						reset();
+						break;
+				}
 				
        //left
         if (distance_left > width)
@@ -314,7 +362,7 @@ int main(void)
 				}					
 				else if(parktype[0] == parallel && time[0] >= 14) {  //parallel
 					HAL_UART_Transmit(&huart2, f, 4, 100);
-					HAL_Delay(500);
+					HAL_Delay(550);
 					HAL_UART_Transmit(&huart2, left_reverse, 4, 100);
 					HAL_Delay(1800);
 					HAL_UART_Transmit(&huart2, back, 4, 100);
@@ -351,7 +399,7 @@ int main(void)
 				}					
 				else if(parktype[1] == parallel && time[1] >= 14) {  //parallel
 					HAL_UART_Transmit(&huart2, f, 4, 100);
-					HAL_Delay(500);
+					HAL_Delay(550);
 					HAL_UART_Transmit(&huart2, right_reverse, 4, 100);
 					HAL_Delay(1800);
 					HAL_UART_Transmit(&huart2, back, 4, 100);
@@ -515,6 +563,10 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
@@ -609,7 +661,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1|LD3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PB1 LD3_Pin */
   GPIO_InitStruct.Pin = GPIO_PIN_1|LD3_Pin;
@@ -618,8 +670,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  /*Configure GPIO pins : PA10 PA12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
