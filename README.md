@@ -33,3 +33,4 @@ Project management, a run-time environment, build tools, source code editing, an
 ## How to build the project 
 You need to have CubeMx and gcc. Then, you can do the connections as illusterated in the cubMx configuration page. Finally, you can generate the code and add it to the STM32. 
 
+For more details, check this Wiki-Page: https://github.com/nadatamerr/Embedded-Systems-Project/wiki/G7:-Car-Auto-Parking-System#design--implementation
